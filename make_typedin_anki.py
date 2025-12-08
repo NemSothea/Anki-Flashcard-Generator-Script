@@ -4,7 +4,7 @@ import genanki
 import os
 
 INPUT = "words.csv"
-OUTPUT = "typed_in_deck_diff.apkg"
+OUTPUT = "my_vocabulary.apkg"
 
 
 def rand_id():
@@ -212,7 +212,7 @@ CSS = r"""
 
 my_model = genanki.Model(
     MODEL_ID,
-    "TypedInputModelWithDiff",
+    "SahilKsVocabularyModel",
     fields=[
         {"name": "Word"},
         {"name": "pos"},
