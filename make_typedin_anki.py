@@ -57,7 +57,8 @@ FRONT_HTML = r"""
 </div>
 """
 
-# Fixed BACK_HTML: meta.innerHTML is a single-line JS string (no raw newline inside quotes)
+# BACK_HTML: clears stored typed answer so the front will be empty next time
+# Also: comparison is case-insensitive (lowercased for DP/backtrack), but displayed chars preserve original case.
 BACK_HTML = r"""
 {{FrontSide}}
 <hr>
@@ -71,50 +72,62 @@ BACK_HTML = r"""
     var uid = uidSpan ? uidSpan.innerText.trim() : 'no-uid';
     var key = 'anki_typed_' + uid;
     var stored = '';
-    try { stored = localStorage.getItem(key) || ''; } catch(e) { stored = ''; }
+    try { stored = (localStorage.getItem(key) || '').trim(); } catch(e) { stored = ''; }
 
     var correctSpan = document.getElementById('correct');
     var correctRaw = correctSpan ? correctSpan.innerText.trim() : '';
     // canonical displayed answer is first alternative before '|'
-    var canonical = correctRaw.split('|')[0];
+    var canonical = (correctRaw.split('|')[0] || '').trim();
 
-    var a = canonical;           // expected
-    var b = stored || '';        // user typed
+    // For case-insensitive comparison we use lowercased copies for DP/backtrack,
+    // but keep the original strings so the displayed diff preserves case.
+    var a = canonical;           // original expected (preserve case for display)
+    var b = stored || '';        // original typed (preserve case for display)
+    var A = a.toLowerCase();
+    var B = b.toLowerCase();
 
-    // compute Levenshtein DP table
-    function levenshteinDP(A, B){
-      var n = A.length, m = B.length;
+    // compute Levenshtein DP table on lowercased strings
+    function levenshteinDP(X, Y){
+      var n = X.length, m = Y.length;
       var dp = new Array(n+1);
-      for (var i=0;i<=n;i++){ dp[i]=new Array(m+1); for (var j=0;j<=m;j++) dp[i][j]=0; }
+      for (var i=0;i<=n;i++){
+        dp[i]=new Array(m+1);
+        for (var j=0;j<=m;j++) dp[i][j]=0;
+      }
       for (var i=0;i<=n;i++) dp[i][0]=i;
       for (var j=0;j<=m;j++) dp[0][j]=j;
       for (var i=1;i<=n;i++){
         for (var j=1;j<=m;j++){
-          var cost = (A[i-1]===B[j-1])?0:1;
+          var cost = (X[i-1]===Y[j-1])?0:1;
           dp[i][j] = Math.min(dp[i-1][j] + 1, dp[i][j-1] + 1, dp[i-1][j-1] + cost);
         }
       }
       return dp;
     }
 
-    var dp = levenshteinDP(a,b);
-    var dist = dp[a.length][b.length];
+    var dp = levenshteinDP(A, B);
+    var dist = dp[A.length][B.length];
 
-    // backtrack to produce ops
+    // backtrack to produce ops — use the lowercase table A/B to decide operations,
+    // but push original-case characters (from a and b) for display
     var ops = [];
-    var i = a.length, j = b.length;
+    var i = A.length, j = B.length;
     while (i>0 || j>0){
-      if (i>0 && j>0 && a[i-1]===b[j-1]){
-        ops.push(['match', a[i-1], b[j-1]]);
+      if (i>0 && j>0 && A[i-1]===B[j-1]){
+        // match
+        ops.push(['match', a.charAt(i-1), b.charAt(j-1)]);
         i--; j--;
       } else if (i>0 && j>0 && dp[i][j] === dp[i-1][j-1] + 1){
-        ops.push(['replace', a[i-1], b[j-1]]);
+        // replace
+        ops.push(['replace', a.charAt(i-1), b.charAt(j-1)]);
         i--; j--;
       } else if (i>0 && dp[i][j] === dp[i-1][j] + 1){
-        ops.push(['delete', a[i-1], '']);
+        // delete from expected
+        ops.push(['delete', a.charAt(i-1), '']);
         i--;
-      } else { // insertion into B (extra char typed)
-        ops.push(['insert', '', b[j-1]]);
+      } else {
+        // insertion into user-typed
+        ops.push(['insert', '', b.charAt(j-1)]);
         j--;
       }
     }
@@ -141,12 +154,15 @@ BACK_HTML = r"""
     });
 
     // decide acceptance threshold: small words tolerate 1 typo, longer tolerate 2
-    var threshold = (canonical.length <= 5) ? 1 : 2;
-    var very_close_threshold = Math.max(1, Math.floor(canonical.length * 0.15)); // very small relative tolerance
+    var threshold = (a.length <= 5) ? 1 : 2;
+    var very_close_threshold = Math.max(1, Math.floor(a.length * 0.15)); // relative tolerance
     var status = 'incorrect';
     if (dist === 0) status = 'correct';
     else if (dist <= very_close_threshold) status = 'close';
     else if (dist <= threshold) status = 'almost';
+
+    // Clear the stored typed answer so the front will be empty next time the card is shown
+    try { localStorage.removeItem(key); } catch(e) {}
 
     // build the status box
     var container = document.currentScript.parentNode;
@@ -160,18 +176,18 @@ BACK_HTML = r"""
     if (status === 'correct'){
       box.style.background = '#ddffea';
       box.style.color = '#084';
-      box.innerHTML = '<div style="font-weight:800;font-size:28px;">Correct</div><div style="margin-top:8px;font-size:28px;">' + esc(canonical) + '</div>';
+      box.innerHTML = '<div style="font-weight:800;font-size:28px;">Correct</div><div style="margin-top:8px;font-size:28px;">' + esc(a) + '</div>';
     } else if (status === 'close' || status === 'almost'){
       box.style.background = '#fff7e6';
       box.style.color = '#6a4d00';
       box.innerHTML = '<div style="font-weight:800;font-size:28px;">Close</div>'
-                    + '<div style="margin-top:8px;font-size:24px;">' + esc(canonical) + '</div>'
+                    + '<div style="margin-top:8px;font-size:24px;">' + esc(a) + '</div>'
                     + '<div style="font-size:14px;margin-top:8px;color:#333;">Small spelling differences shown below.</div>';
     } else {
       box.style.background = '#ffecec';
       box.style.color = '#900';
       box.innerHTML = '<div style="font-weight:800;font-size:28px;">Answer</div>'
-                    + '<div style="margin-top:8px;font-size:24px;">' + esc(canonical) + '</div>'
+                    + '<div style="margin-top:8px;font-size:24px;">' + esc(a) + '</div>'
                     + '<div style="font-size:14px;margin-top:8px;color:#333;">Your attempt shown below.</div>';
     }
     container.appendChild(box);
