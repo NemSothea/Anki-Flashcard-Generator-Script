@@ -29,8 +29,8 @@ FRONT_HTML = r"""
   <span id="uid" style="display:none">{{uid}}</span>
   <span id="exampleText" style="display:none">{{example}}</span>
 
-  <div style="margin-top:12px; font-size:20px; color: #0a5;">
-    <strong>{{pos}}</strong> &nbsp; — &nbsp; {{definition}}
+  <div style="margin-top:12px; font-size:20px;">
+    <strong id="posField">{{pos}}</strong> &nbsp; — &nbsp; <span style="color: #333;">{{definition}}</span>
   </div>
 
   <div style="margin-top:8px; font-size:12px; color:#666;">
@@ -87,6 +87,38 @@ FRONT_HTML = r"""
       }
     } catch(e) {
       console.log('Front script error:', e);
+    }
+  })();
+  
+  // Color-code part of speech
+  (function(){
+    try {
+      var posField = document.getElementById('posField');
+      if (!posField) return;
+      
+      var pos = posField.textContent.trim().toLowerCase();
+      
+      // Color mapping for different parts of speech
+      var colors = {
+        'adjective': '#2563eb',           // Blue
+        'noun': '#16a34a',                // Green
+        'verb': '#ea580c',                // Orange
+        'adverb': '#7c3aed',              // Purple
+        'idiom': '#db2777',               // Pink
+        'phrase': '#ec4899',              // Hot pink
+        'noun phrase': '#0891b2',         // Cyan
+        'adjective phrase': '#3b82f6',    // Light blue
+        'verb phrase': '#f97316',         // Amber
+        'noun (technical)': '#059669',    // Emerald
+        'noun/verb': '#84cc16'            // Lime
+      };
+      
+      // Apply color
+      var color = colors[pos] || '#0a5'; // Default green if not found
+      posField.style.color = color;
+      
+    } catch(e) {
+      console.log('POS color error:', e);
     }
   })();
   </script>
