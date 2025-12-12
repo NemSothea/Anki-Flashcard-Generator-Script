@@ -2,11 +2,17 @@
 
 Generate a typed-input Anki deck from a CSV word list using Python.
 
-## Prerequisites
+## Anki UI Preview
+| Correct word | Incorrect word |
+| ------------- | ------------- |
+|<img width="1440" height="900" alt="correct-preview" src="https://github.com/user-attachments/assets/8e05847b-0aac-41a1-a62e-66945a059536" />|<img width="1440" height="900" alt="incorrect-preview" src="https://github.com/user-attachments/assets/586f4388-b9e7-4230-9d1a-44f6cfcffc52" />|
+
+# Getting started
+### Prerequisites
 - Python 3.9+ and `pip`
 - Anki installed to import the generated `.apkg`
 
-## Quick start
+### Quick start
 ```bash
 git clone https://github.com/your-username/anki-flashcard-generator.git
 cd anki-flashcard-generator
@@ -18,7 +24,7 @@ python make_typedin_anki.py
 
 Running the script creates `typed_in_deck_diff.apkg` in the project root. Import that file into Anki (double-click it or use File → Import).
 
-## Add new words via AnkiConnect
+### Add new words via AnkiConnect
 Push words from `words.csv` directly into Anki using AnkiConnect:
 
 1. Install the AnkiConnect add-on (ID 2055492159) in Anki and keep Anki running.
@@ -30,7 +36,7 @@ Push words from `words.csv` directly into Anki using AnkiConnect:
 
 The script skips words already present (matching the `Word` field) and adds notes in batches to avoid AnkiConnect limits.
 
-## CSV format
+### CSV format
 Place your source data in `words.csv` with headers:
 
 - `word` (required)
@@ -50,7 +56,7 @@ Notes:
 - Empty `word` rows are skipped.
 - A random `uid` is added per note to store typed input locally in Anki.
 
-## Configuration
+### Configuration
 - Input file: `words.csv`
 - Output file: `typed_in_deck_diff.apkg`
 
