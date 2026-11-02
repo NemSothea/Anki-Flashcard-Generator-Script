@@ -18,7 +18,7 @@ Python scripts that turn a CSV word list into an Anki `.apkg` deck with a custom
 ```bash
 python3 -m venv .venv && .venv/bin/pip install -r requirements.txt   # Homebrew python3 refuses global pip (PEP 668)
 .venv/bin/python make_topik_deck.py          # build topik2_deck.apkg
-.venv/bin/python make_typedin_anki.py        # build my_vocabulary.apkg (README wrongly says typed_in_deck_diff.apkg)
+.venv/bin/python make_typedin_anki.py        # build my_vocabulary.apkg
 .venv/bin/python ankiconnect_add_words.py    # needs Anki open with AnkiConnect (add-on 2055492159)
 ```
 

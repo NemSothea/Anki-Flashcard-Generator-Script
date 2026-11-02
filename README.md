@@ -22,7 +22,7 @@ pip install -r requirements.txt
 python make_typedin_anki.py
 ```
 
-Running the script creates `typed_in_deck_diff.apkg` in the project root. Import that file into Anki (double-click it or use File → Import).
+Running the script creates `my_vocabulary.apkg` in the project root. Import that file into Anki (double-click it or use File → Import).
 
 ### Add new words via AnkiConnect
 Push words from `words.csv` directly into Anki using AnkiConnect:
@@ -58,7 +58,7 @@ Notes:
 
 ### Configuration
 - Input file: `words.csv`
-- Output file: `typed_in_deck_diff.apkg`
+- Output file: `my_vocabulary.apkg`
 
 You can change these defaults by editing `INPUT` and `OUTPUT` at the top of `make_typedin_anki.py`.
 
