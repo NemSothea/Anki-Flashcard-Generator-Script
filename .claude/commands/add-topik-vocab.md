@@ -26,7 +26,7 @@ You are extending the Anki-Flashcard-Generator-Script repo with a daily TOPIK II
    Transcribe only what is printed. Never invent, guess, or auto-translate a field that isn't shown — if something is illegible or missing, leave that field blank and list it in the final report instead of filling it in.
 4. Before appending each row, check the `word` column already in `topik_words.csv` (exact match) and skip it if that word is already present. Track counts of added vs. skipped-as-duplicate.
 5. After all entries from an image are transcribed and appended: if it was HEIC, the original is already deleted (step 2) and the jpg is the record in `processed/`. If it was already JPG/PNG, move that original file into `Topik II Vocabulary List Resource/processed/` — never delete a non-HEIC source image.
-6. Run `python3 make_topik_deck.py` to regenerate `topik2_deck.apkg`.
+6. Run `.venv/bin/python make_topik_deck.py` to regenerate `topik2_deck.apkg` (the repo `.venv` has `genanki`; system `python3` does not). If `.venv` is missing, stop and ask before recreating it with `python3 -m venv .venv && .venv/bin/pip install -r requirements.txt`.
 7. Print a final report: images processed, words added, duplicates skipped, any entries flagged as illegible/incomplete (with which image), and the output path `topik2_deck.apkg` with a reminder to import it via Anki → File → Import.
 </steps>
 
