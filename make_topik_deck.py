@@ -443,6 +443,9 @@ def create_deck():
                         model=my_model,
                         fields=[word, pos, definition, example, uid],
                         tags=tags,
+                        # Stable GUID from the word so reimports update notes
+                        # instead of duplicating them (uid is random per run).
+                        guid=genanki.guid_for(word),
                     )
                     deck.add_note(note)
                     count += 1
